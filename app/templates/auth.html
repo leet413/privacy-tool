@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block body %}
+<div class="card narrow">
+  <h1>{{ title }}</h1>
+  <form method="post">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Username <input name="username" autocomplete="username" required autofocus></label>
+    <label>Password <input type="password" name="password" autocomplete="{{ 'new-password' if confirm else 'current-password' }}" required></label>
+    {% if confirm %}<label>Confirm password <input type="password" name="confirm" autocomplete="new-password" required></label>
+    <p class="mut">At least 10 characters. This first account becomes the admin; it can add other users from the Users page.</p>{% endif %}
+    <button class="btn">{{ button }}</button>
+  </form>
+</div>
+{% endblock %}

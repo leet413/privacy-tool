@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_form with context %}
+{% block body %}
+<h1>Scan: {{ s['profile_label'] }}</h1>
+<p class="mut">{{ s['started'] }} UTC &middot; {{ 'Deep' if s['deep'] else 'Standard' }} &middot; {{ s['engine'] }}
+ &middot; <span class="tag {{ s['status'] }}">{{ s['status'] }}</span></p>
+
+{% if s['status'] in ('queued', 'running') %}
+<div class="card" id="scan-status" data-url="{{ url_for('scan_status', sid=s['id']) }}">
+  <progress id="bar" max="100" value="0"></progress>
+  <div id="prog" class="mut">starting...</div>
+  <p class="mut">Searches are paced to avoid rate limits, so a deep scan takes a few minutes. You can leave this page.</p>
+  <form method="post" action="{{ url_for('scan_cancel', sid=s['id']) }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link danger">Cancel scan</button></form>
+</div>
+{% elif s['status'] == 'failed' %}
+<div class="flash err">Scan failed: {{ s['error'] }}</div>
+{% elif s['status'] == 'cancelled' %}
+<div class="flash err">Scan cancelled.</div>
+{% else %}
+  {% if errors %}<div class="flash err">{{ errors }} of {{ s['total'] }} searches failed, so these results may be incomplete.</div>{% endif %}
+  <h2>Known brokers that appear to list you ({{ found|length }})</h2>
+  {% for domain, e in found %}
+  <div class="card">
+    <div class="row"><div><strong>{{ e['name'] }}</strong> <span class="tag {{ e['best'] }}">{{ e['best'] }} match</span></div>
+      {{ status_form(domain, tr.get(domain, 'todo'), url_for('scan_view', sid=s['id'])) }}</div>
+    {% if tr.get(domain) == 'removed' %}<div class="flash err">You marked this removed, but it appears again. Re-submit the opt-out.</div>{% endif %}
+    <ul>{% for h in e['hits'][:6] %}<li><a href="{{ h['url'] }}" target="_blank" rel="noopener noreferrer">{{ h['title'] or h['url'] }}</a> <span class="mut">({{ h['conf'] }})</span></li>{% endfor %}</ul>
+    <div class="row"><span class="mut">{{ e['note'] }}</span>
+      <a class="btn" href="{{ e['optout'] }}" target="_blank" rel="noopener noreferrer">Opt out</a></div>
+  </div>
+  {% else %}<p class="mut">None found via search. Brokers often hide listings from search engines, so also work through the <a href="{{ url_for('tracker') }}">opt-out tracker</a>.</p>{% endfor %}
+
+  {% if possible %}<h2>Unrecognized sites that may be brokers ({{ possible|length }})</h2>
+  {% for domain, e in possible %}<div class="card"><strong>{{ domain }}</strong> <span class="tag {{ e['best'] }}">{{ e['best'] }}</span>
+    <ul>{% for h in e['hits'][:4] %}<li><a href="{{ h['url'] }}" target="_blank" rel="noopener noreferrer">{{ h['title'] or h['url'] }}</a></li>{% endfor %}</ul>
+    <div class="mut">No known opt-out link. Look for "Opt out", "Do Not Sell", or "Privacy" in the site footer.</div></div>{% endfor %}{% endif %}
+{% endif %}
+
+<form method="post" action="{{ url_for('scan_delete', sid=s['id']) }}" data-confirm="Delete this scan?"><input type="hidden" name="csrf" value="{{ csrf }}">
+  <a href="{{ url_for('dashboard') }}">Back</a> &middot; <button class="link danger">Delete scan</button></form>
+{% endblock %}

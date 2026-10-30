@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_form with context %}
+{% block body %}
+<h1>Opt-out tracker</h1>
+<p class="mut">Every broker in the directory, with your progress. Brokers found in your latest scan are listed first. Verify each opt-out page before submitting: brokers change them often, and many email a confirmation link you must click.</p>
+<table><tr><th>Broker</th><th>Latest scan</th><th>Status</th><th></th></tr>
+{% for r in rows %}<tr>
+  <td><strong>{{ r['name'] }}</strong><div class="mut">{{ r['note'] }}</div></td>
+  <td>{% if r['found'] and r['status'] == 'removed' %}<span class="tag high">re-listed</span>
+      {% elif r['found'] %}<span class="tag {{ r['found'] }}">found ({{ r['found'] }})</span>
+      {% else %}<span class="mut">not seen</span>{% endif %}</td>
+  <td>{{ status_form(r['domain'], r['status'], url_for('tracker')) }}</td>
+  <td><a class="btn" href="{{ r['optout'] }}" target="_blank" rel="noopener noreferrer">Opt out</a></td></tr>
+{% endfor %}</table>
+<h2>Other resources</h2>
+{% for title, url, note in extras %}<div class="card"><a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ title }}</a><div class="mut">{{ note }}</div></div>{% endfor %}
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card narrow">
+  <h1>{{ 'Edit profile' if editing else 'New profile' }}</h1>
+  <form method="post">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Profile label <input name="label" value="{{ p['label'] or '' }}" placeholder="e.g. Me"></label>
+    <label>Names (one per line; first line is your main name, add maiden names or nicknames below)
+      <textarea name="names" rows="3" required>{{ p['names'] or '' }}</textarea></label>
+    <div class="grid2">
+      <label>City <input name="city" value="{{ p['city'] or '' }}"></label>
+      <label>State <input name="state" value="{{ p['state'] or '' }}" placeholder="SC"></label>
+    </div>
+    <label>Street address (optional, but makes matches much more reliable) <input name="street" value="{{ p['street'] or '' }}"></label>
+    <label>Emails (one per line) <textarea name="emails" rows="2">{{ p['emails'] or '' }}</textarea></label>
+    <label>Phone numbers (one per line) <textarea name="phones" rows="2">{{ p['phones'] or '' }}</textarea></label>
+    <p class="mut">Stored only in this server's database. Search queries built from this data are sent to the search engine when you run a scan.</p>
+    <button class="btn">Save</button> <a href="{{ url_for('dashboard') }}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

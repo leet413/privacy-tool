@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Users</h1>
+<p class="mut">Admins manage accounts only. Profiles, scans, and tracker data are visible only to their owner. Deleting a user deletes all of their data.</p>
+<table><tr><th>User</th><th>Role</th><th>Created (UTC)</th><th>Profiles</th><th>Scans</th><th></th></tr>
+{% for u in users %}<tr><td>{{ u['username'] }}</td><td>{{ 'admin' if u['is_admin'] else 'user' }}</td><td>{{ u['created'] }}</td>
+  <td>{{ u['n_profiles'] }}</td><td>{{ u['n_scans'] }}</td>
+  <td class="row">
+    <form method="post" action="{{ url_for('admin_reset', uid=u['id']) }}" class="inline" data-confirm="Reset this user's password?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link">Reset password</button></form>
+    {% if u['id'] != user['id'] %}<form method="post" action="{{ url_for('admin_delete', uid=u['id']) }}" class="inline" data-confirm="Delete this user and ALL of their data?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link danger">Delete</button></form>{% endif %}
+  </td></tr>{% endfor %}</table>
+<h2>Add user</h2>
+<div class="card narrow"><form method="post" action="{{ url_for('admin_create') }}">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label>Username <input name="username" required></label>
+  <label>Initial password (10+ characters) <input type="password" name="password" autocomplete="new-password" required></label>
+  <label class="chk"><input type="checkbox" name="is_admin" value="1"> Make admin</label>
+  <button class="btn">Create user</button></form></div>
+{% endblock %}

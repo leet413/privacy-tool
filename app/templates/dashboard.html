@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Dashboard</h1>
+<div class="stats">
+  <div class="card"><div class="num">{{ stats.found }}</div><div class="mut">brokers listing you (latest scans)</div></div>
+  <div class="card"><div class="num">{{ stats.todo }}</div><div class="mut">found, not yet opted out</div></div>
+  <div class="card"><div class="num">{{ stats.removed }}</div><div class="mut">marked removed</div></div>
+  <div class="card"><div class="num {{ 'high' if stats.relisted }}">{{ stats.relisted }}</div><div class="mut">re-listed after removal</div></div>
+</div>
+
+<h2>Profiles</h2>
+{% for p in profiles %}
+<div class="card">
+  <div class="row"><div><strong>{{ p['label'] }}</strong>
+    <div class="mut">{{ p['names'].splitlines()|join(', ') }}{% if p['city'] %} &middot; {{ p['city'] }}{% endif %}{% if p['state'] %}, {{ p['state'] }}{% endif %}</div></div>
+    <div class="row">
+      <form method="post" action="{{ url_for('scan_start', pid=p['id']) }}" class="inline row">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label class="chk"><input type="checkbox" name="deep" value="1"> Deep (checks every broker)</label>
+        {% if brave_available %}<select name="engine"><option value="ddg">DuckDuckGo</option><option value="brave">Brave</option></select>{% endif %}
+        <button class="btn">Run scan</button>
+      </form>
+      <a href="{{ url_for('profile_edit', pid=p['id']) }}">Edit</a>
+      <form method="post" action="{{ url_for('profile_delete', pid=p['id']) }}" class="inline" data-confirm="Delete this profile and all its scans?">
+        <input type="hidden" name="csrf" value="{{ csrf }}"><button class="link danger">Delete</button></form>
+    </div></div>
+</div>
+{% else %}
+<div class="card">No profiles yet. A profile holds the name, location, email, and phone to search for.</div>
+{% endfor %}
+<p><a class="btn" href="{{ url_for('profile_new') }}">Add profile</a></p>
+
+<h2>Recent scans</h2>
+{% if scans %}
+<table><tr><th>Profile</th><th>Started (UTC)</th><th>Mode</th><th>Status</th><th></th></tr>
+{% for s in scans %}<tr>
+  <td>{{ s['profile_label'] }}</td><td>{{ s['started'] }}</td><td>{{ 'Deep' if s['deep'] else 'Standard' }}</td>
+  <td><span class="tag {{ s['status'] }}">{{ s['status'] }}</span></td>
+  <td><a href="{{ url_for('scan_view', sid=s['id']) }}">View</a></td></tr>
+{% endfor %}</table>
+{% else %}<p class="mut">No scans yet.</p>{% endif %}
+<p class="mut">Everything here is private to your account. Admins can manage accounts but cannot see anyone's profiles or results.</p>
+{% endblock %}

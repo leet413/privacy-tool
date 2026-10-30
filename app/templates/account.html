@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card narrow">
+  <h1>Change password</h1>
+  <form method="post">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Current password <input type="password" name="current" autocomplete="current-password" required></label>
+    <label>New password <input type="password" name="new" autocomplete="new-password" required></label>
+    <label>Confirm new password <input type="password" name="confirm" autocomplete="new-password" required></label>
+    <button class="btn">Change password</button>
+  </form>
+</div>
+{% endblock %}
